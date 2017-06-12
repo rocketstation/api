@@ -62,7 +62,7 @@
   ],
   "license": "MIT",
   "main": "build/index.js",
-  "name": "@rocketstation/api",
+  "name": "rocketstation-api",
   "repository": {
     "type" : "git",
     "url" : "https://github.com/rocketstation/api"
