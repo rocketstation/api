@@ -55,12 +55,14 @@
     "README.md"
   ],
   "keywords": [
-    "rocket station",
-    "api"
+    "rocketstation",
+    "sequelize",
+    "json-api",
+    "koa2"
   ],
   "license": "MIT",
   "main": "build/index.js",
-  "name": "rs-api",
+  "name": "@rocketstation/api",
   "repository": {
     "type" : "git",
     "url" : "https://github.com/rocketstation/api"
