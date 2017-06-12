@@ -61,6 +61,10 @@
   "license": "MIT",
   "main": "build/index.js",
   "name": "rs-api",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/rocketstation/api"
+  },
   "scripts": {
     "build": "rm -rf build && babel src --ignore test.js -d build",
     "lint": "standard 'src/**/!(test.js)' --fix --verbose | snazzy && standard '+(config|src)/**/test.js' --env mocha --fix --verbose | snazzy",
