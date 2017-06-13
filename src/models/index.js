@@ -51,7 +51,7 @@ const associate = (model, title, sequelize, type, definition) => {
 const factory = (container, title) => {
   const { sequelize } = container
   const { associations = {}, attributes = {}, ...options } = container[title]
-  if (!options.tableName) options.tableName = pluralize(title)
+  if (!options.tableName) options.tableName = snake(pluralize(title))
   const model = sequelize.define(title, attributes, options)
   ;['hasMany', 'belongsTo', 'belongsToMany'].forEach((item) => {
     const definition = associations[item]

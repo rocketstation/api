@@ -81,7 +81,7 @@ const factory = (container, title) => {
   const _container$title = container[title],
         { associations = {}, attributes = {} } = _container$title,
         options = _objectWithoutProperties(_container$title, ['associations', 'attributes']);
-  if (!options.tableName) options.tableName = (0, _pluralize2.default)(title);
+  if (!options.tableName) options.tableName = (0, _changeCase.snake)((0, _pluralize2.default)(title));
   const model = sequelize.define(title, attributes, options);['hasMany', 'belongsTo', 'belongsToMany'].forEach(item => {
     const definition = associations[item];
     if (definition) associate(model, (0, _changeCase.pascal)(title), sequelize, item, definition);
