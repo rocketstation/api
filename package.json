@@ -64,13 +64,13 @@
   "main": "build/index.js",
   "name": "rocketstation-api",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/rocketstation/api"
+    "type": "git",
+    "url": "https://github.com/rocketstation/api"
   },
   "scripts": {
     "build": "rm -rf build && babel src --ignore test.js -d build",
     "lint": "standard 'src/**/!(test.js)' --fix --verbose | snazzy && standard '+(config|src)/**/test.js' --env mocha --fix --verbose | snazzy",
     "test": "nyc -i babel-register -x '+(config|src)/**/test.js' mocha '+(config|src)/**/test.js' && rm -rf coverage"
   },
-  "version": "1.0.4"
+  "version": "1.0.5"
 }

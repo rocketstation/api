@@ -54,12 +54,6 @@ const use = (namespace, controllers, app, parser, validator, routes = {}) => {
       } else {
         Object.keys(rest).forEach((element) => {
           const {
-          onError = ({ errors = [], isValidation, status = 400 }) => {
-            return Bluebird.reject({
-              status,
-              errors: isValidation ? errors.map(({ dataPath: key, message: value }) => ({ key, value })) : errors
-            })
-          },
           logging = {},
           method,
           schema,
@@ -67,12 +61,17 @@ const use = (namespace, controllers, app, parser, validator, routes = {}) => {
           url = `/${param(item.replace(pascal(namespace), '').replace('Controller', ''))}-${param(element)}`
         } = rest[element]
           if (method) {
+            let onError = rest[element].onError
+            if (!onError) {
+              onError = (error) => error.isValidation ? error.errors.map(({ dataPath: key, message: value }) => ({ key, value })) : null
+            }
             router.use(url, async (ctx, next) => {
               try {
                 await next()
               } catch (error) {
-                if (error.stack) throw (error)
-                else return onError(error)
+                const errors = await onError(error)
+                if (!errors) throw (error)
+                else return Bluebird.reject({ status: 400, errors })
               }
             })
             if (schema) {
