@@ -18,15 +18,13 @@ const load = (config) => {
       return data.length !== 0
     },
     connectionString,
-    async create (pgp) {
-      let connection = result.getConnection(pgp)
+    async create (connection, pgp) {
       const dbExists = await result.checkIfExists(connection)
       if (!dbExists) {
         await connection.query(`create database ${name}`)
-        connection = result.getConnection(pgp, `${connectionString}/${name}`)
-        await connection.query('create table if not exists "rstation_api_migrations" ("title" varchar(255) not null unique)')
+        const dbConnection = result.getConnection(pgp, `${connectionString}/${name}`)
+        await dbConnection.query('create table if not exists "rstation_api_migrations" ("title" varchar(255) not null unique)')
       }
-      // return Bluebird.resolve()
     },
     delete (connection) {
       return connection.query(`drop database if exists ${name}`)

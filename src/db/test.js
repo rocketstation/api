@@ -53,7 +53,7 @@ describe('db', function () {
 
     const db = await loadWithFakeConnection()
 
-    await db.create(fakePGP)
+    await db.create({ query: fakeQuery }, fakePGP)
     assert(fakeQuery.calledWith('create database test'))
     assert(fakeQuery.calledWith('create table if not exists "rstation_api_migrations" ("title" varchar(255) not null unique)'))
   })
