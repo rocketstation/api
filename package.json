@@ -18,7 +18,7 @@
     "mjml": "3",
     "moment": "2",
     "moment-timezone": "^0.5.11",
-    "nodemailer": "2",
+    "nodemailer": "4",
     "nodemailer-ses-transport": "1",
     "nodemailer-smtp-transport": "2",
     "parse-function": "3",
