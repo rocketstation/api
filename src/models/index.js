@@ -27,7 +27,7 @@ const associate = (model, title, sequelize, type, definition) => {
       break
     }
     case 'object': {
-      const { model: declaredModel, scope, ...rest } = definition
+      const { model: declaredModel, scope, ...rest = {} } = definition
       relation = declaredModel
       relatedModel = sequelize.models[camel(relation)]
       if (scope) {
@@ -43,7 +43,8 @@ const associate = (model, title, sequelize, type, definition) => {
 
     if (['hasMany', 'belongsTo'].includes(type)) {
       const fkName = `${camel(type === 'hasMany' ? title : relation)}ID`
-      options = merge({ onDelete: 'cascade', foreignKey: { allowNull: false, name: fkName, field: snake(fkName) }, hooks: true }, options)
+      const allowNull = options.onDelete && options.onDelete.toLowerCase() === 'set null' ? true : false
+      options = merge({ onDelete: 'cascade', foreignKey: { allowNull, name: fkName, field: snake(fkName) }, hooks: true }, options)
     }
   }
   model[type](relatedModel, options)

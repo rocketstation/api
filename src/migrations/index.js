@@ -56,7 +56,8 @@ const getPending = async (connection, migrations) => {
     }
   })
   let pending = pendingUnsorted.filter(({ references }) => references.length === 0)
-  while (pending.length !== pendingUnsorted.length) {
+  let i = 0
+  while (pending.length !== pendingUnsorted.length && i < 100) {
     pending.forEach(({ table }) => {
       if (!createdTables.includes(table)) createdTables.push(table)
     })
@@ -68,6 +69,15 @@ const getPending = async (connection, migrations) => {
       })
       return flag
     }))
+    i += 1
+  }
+  if (i === 100) {
+    console.log('Possible circular dependency found. Pending tables')
+    console.log('UNSORTED:')
+    console.log(pendingUnsorted.map(({ table, references }) => ({ table, references })))
+    console.log('SORTED:')
+    console.log(pending.map(({ table, references }) => ({ table, references })))
+    return []
   }
   return pending
 }
