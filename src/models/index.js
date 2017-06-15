@@ -4,6 +4,7 @@ import {
   pascal,
   snake
 } from 'change-case'
+import merge from 'deepmerge'
 import fs from 'fs'
 import parseFunction from 'parse-function'
 import path from 'path'
@@ -42,7 +43,7 @@ const associate = (model, title, sequelize, type, definition) => {
 
     if (['hasMany', 'belongsTo'].includes(type)) {
       const fkName = `${camel(type === 'hasMany' ? title : relation)}ID`
-      options = { ...{ onDelete: 'cascade', foreignKey: { allowNull: false, name: fkName, field: snake(fkName) }, hooks: true }, ...options }
+      options = merge({ onDelete: 'cascade', foreignKey: { allowNull: false, name: fkName, field: snake(fkName) }, hooks: true }, options)
     }
   }
   model[type](relatedModel, options)

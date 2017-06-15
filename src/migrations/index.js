@@ -1,11 +1,12 @@
 import Bluebird from 'bluebird'
+import { snake } from 'change-case'
 import fs from 'fs'
 import parseFunction from 'parse-function'
 import path from 'path'
 import pluralize from 'pluralize'
 
 const getDirPath = (dir, model) => path.join(dir, model, 'migrations')
-const getTableName = (migrationTitle) => pluralize(migrationTitle.split('.').slice(0, -1).join('_'))
+const getTableName = (migrationTitle) => pluralize(snake(migrationTitle.split('.').slice(0, -1)))
 
 const load = (dir) => {
   const modelsDir = path.join(dir, 'models')
@@ -43,10 +44,10 @@ const getPending = async (connection, migrations) => {
       const method = migrations[item].up
       const body = method.toString().replace(/\r?\n|\r/g, '').replace(/ /g, '')
       const references = []
-      const regex = /references:{model:'([a-z_]+)'|\.(addColumn|removeColumn|changeColumn|renameColumn)\('([a-z_]+)'/g
+      const regex = /references:{model:'([a-zA-Z]+)'|\.(addColumn|removeColumn|changeColumn|renameColumn)\('([a-z_]+)'/g
       let match = regex.exec(body)
       while (match) {
-        const tableName = match[1] || match[3]
+        const tableName = snake(match[1]) || match[3]
         if (tableName && !references.includes(tableName)) references.push(tableName)
         match = regex.exec(body)
       }
