@@ -45,12 +45,12 @@ const getPending = async (connection, migrations) => {
       const method = migrations[item].up
       const body = method.toString().replace(/\r?\n|\r/g, '').replace(/ /g, '')
       const references = []
-      const regex = /references:{model:'([a-zA-Z]+)'|\.(addColumn|removeColumn|changeColumn|renameColumn)\('([a-z_]+)'/g
+      const regex = /references:{model:'([a-z_]+)'|\.(addColumn|removeColumn|changeColumn|renameColumn)\('([a-z_]+)'/g
       let match = regex.exec(body)
       while (match) {
         let tableName
         if (match[1]) {
-          if (snake(match[1]) !== table) tableName = snake(match[1])
+          if (match[1] !== table) tableName = match[1]
         }
         if (match[3]) {
           tableName = match[3]
