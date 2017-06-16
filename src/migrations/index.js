@@ -41,17 +41,23 @@ const getPending = async (connection, migrations) => {
   const pendingUnsorted = []
   Object.keys(migrations).forEach((item) => {
     if (!executed.includes(item)) {
+      const table = getTableName(item)
       const method = migrations[item].up
       const body = method.toString().replace(/\r?\n|\r/g, '').replace(/ /g, '')
       const references = []
       const regex = /references:{model:'([a-zA-Z]+)'|\.(addColumn|removeColumn|changeColumn|renameColumn)\('([a-z_]+)'/g
       let match = regex.exec(body)
       while (match) {
-        const tableName = snake(match[1]) || match[3]
+        let tableName
+        if (match[1]) {
+          if (snake(match[1]) !== table) tableName = snake(match[1])
+        }
+        if (match[3]) {
+          tableName = match[3]
+        }
         if (tableName && !references.includes(tableName)) references.push(tableName)
         match = regex.exec(body)
       }
-      const table = getTableName(item)
       pendingUnsorted.push({ method, table, references, title: item })
     }
   })
@@ -73,10 +79,11 @@ const getPending = async (connection, migrations) => {
   }
   if (i === 100) {
     console.log('Possible circular dependency found. Pending tables')
-    console.log('UNSORTED:')
-    console.log(pendingUnsorted.map(({ table, references }) => ({ table, references })))
     console.log('SORTED:')
     console.log(pending.map(({ table, references }) => ({ table, references })))
+    const sortedTables = pending.map(({ table }) => table)
+    console.log('UNSORTED:')
+    console.log(pendingUnsorted.filter(({ table }) => !sortedTables.includes(table)).map(({ table, references }) => ({ table, references })))
     return []
   }
   return pending

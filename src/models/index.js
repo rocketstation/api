@@ -42,8 +42,8 @@ const associate = (model, title, sequelize, type, definition) => {
     if (type === 'belongsToMany' && !options.through) { options.through = snake(title > relation ? `${relation}${pluralize(title)}` : `${title}${pluralize(relation)}`) }
 
     if (['hasMany', 'belongsTo'].includes(type)) {
-      const fkName = `${camel(type === 'hasMany' ? title : relation)}ID`
-      const allowNull = options.onDelete && options.onDelete.toLowerCase() === 'set null' ? true : false
+      const fkName = typeof options.foreignKey === 'string' ? options.foreignKey : `${camel(type === 'hasMany' ? title : relation)}ID`
+      const allowNull = options.onDelete && options.onDelete.toLowerCase() === 'set null'
       options = merge({ onDelete: 'cascade', foreignKey: { allowNull, name: fkName, field: snake(fkName) }, hooks: true }, options)
     }
   }
