@@ -27,7 +27,7 @@ const associate = (model, title, sequelize, type, definition) => {
       break
     }
     case 'object': {
-      const { model: declaredModel, scope, ...rest = {} } = definition
+      const { model: declaredModel, scope, ...rest } = definition
       relation = declaredModel
       relatedModel = sequelize.models[camel(relation)]
       if (scope) {
@@ -42,10 +42,15 @@ const associate = (model, title, sequelize, type, definition) => {
     if (type === 'belongsToMany' && !options.through) { options.through = snake(title > relation ? `${relation}${pluralize(title)}` : `${title}${pluralize(relation)}`) }
 
     if (['hasMany', 'belongsTo'].includes(type)) {
-      const { onDelete = 'cascade', foreignKey, ...opts } = options
-      const fkName = typeof foreignKey === 'string' ? foreignKey : `${camel(type === 'hasMany' ? title : relation)}ID`
+      let { onDelete = 'cascade', foreignKey: fk, ...opts } = options
       const allowNull = onDelete.toLowerCase() === 'set null'
-      options = merge({ onDelete, foreignKey: { allowNull, name: fkName, field: snake(fkName) }, hooks: true }, opts)
+      let fkName = `${camel(type === 'hasMany' ? title : relation)}ID`
+      if (typeof fk === 'string') {
+        fkName = fk
+        fk = {}
+      }
+      const foreignKey = merge({ allowNull, name: fkName, field: snake(fkName) }, fk)
+      options = merge({ onDelete, foreignKey, hooks: true }, opts)
     }
   }
   model[type](relatedModel, options)
@@ -61,7 +66,7 @@ const factory = (container, title) => {
   })
   Object.keys(instanceMethods).forEach((item) => {
     model.prototype[item] = instanceMethods[item]
-  })  
+  })
   ;['hasMany', 'belongsTo', 'belongsToMany'].forEach((item) => {
     const definition = associations[item]
     if (definition) associate(model, pascal(title), sequelize, item, definition)
