@@ -42,7 +42,7 @@ const associate = (model, title, sequelize, type, definition) => {
     if (type === 'belongsToMany' && !options.through) { options.through = snake(title > relation ? `${relation}${pluralize(title)}` : `${title}${pluralize(relation)}`) }
 
     if (['hasMany', 'belongsTo'].includes(type)) {
-      let { onDelete = 'cascade', foreignKey: fk, ...opts } = options
+      let { onDelete = 'cascade', foreignKey: fk = {}, ...opts } = options
       const allowNull = onDelete.toLowerCase() === 'set null'
       let fkName = `${camel(type === 'hasMany' ? title : relation)}ID`
       if (typeof fk === 'string') {
