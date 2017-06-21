@@ -54,8 +54,8 @@ describe('schema', function () {
             data: {
               additionalProperties: true,
               properties: {
-                about: { type: 'string|null' },
-                age: { type: 'number' },
+                about: { type: ['string', 'null'] },
+                age: { type: ['number'] },
                 name: { type: 'string' }
               },
               required: ['name'],
@@ -95,12 +95,12 @@ describe('schema', function () {
           {
             additionalProperties: false,
             properties: {
-              age: { type: 'number' }
+              age: { type: ['number'] }
             },
             required: ['age'],
             type: 'object'
           },
-          { type: 'number' }
+          { type: ['number'] }
         ]
       })
       assert.deepEqual(array, {

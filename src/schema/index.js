@@ -46,7 +46,8 @@ const parse = (schema, predefined) => {
   schema.forEach((item) => {
     switch (typeof item) {
       case 'string':
-        if (item.includes('|') || ['number', 'integer', 'string', 'boolean', 'array', 'object', 'null'].includes(item)) type = item
+        const types = item.split('|').filter((item) => ['number', 'integer', 'string', 'boolean', 'array', 'object', 'null'].includes(item))
+        if (types.length > 0) type = types
         else if (item.startsWith('schema.')) defined = item
         else title = item
         break
