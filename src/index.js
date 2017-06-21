@@ -124,11 +124,6 @@ const loadMigrations = async (dir = process.cwd()) => {
 }
 
 const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
-  const { config: { body = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
-
-  const schema = await schemaLoader(schemaConfig)
-  const controllers = await controllersLoader(dir)
-  const routes = {}
   const app = new Koa()
   const server = http.Server(app.callback())
   const validator = ajv({ allErrors: true, removeAdditional: true, useDefaults: true })
@@ -137,6 +132,11 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
     const sockets = socketIO(server)
     addService('sockets', () => sockets)
   }
+
+  const { config: { body = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
+  const schema = await schemaLoader(schemaConfig)
+  const controllers = await controllersLoader(dir)
+  const routes = {}
 
   app.use(kcors(cors))
   app.use(koaMorgan(format, options))
