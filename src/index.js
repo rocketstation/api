@@ -1,11 +1,13 @@
 import ajv from 'ajv'
 import Bluebird from 'bluebird'
 import Bottle from 'bottlejs'
+import { param } from 'change-case'
 import http from 'http'
 import kcors from 'kcors'
 import Koa from 'koa'
 import koaBody from 'koa-body'
 import koaMorgan from 'koa-morgan'
+import Router from 'koa-router'
 import moment from 'moment-timezone'
 import pgpLib from 'pg-promise'
 import pgpMonitor from 'pg-monitor'
@@ -13,7 +15,7 @@ import Sequelize from 'sequelize'
 import socketIO from 'socket.io'
 
 import configLoader from './config'
-import controllersLoader, { use } from './controllers'
+import controllersLoader, { useAction } from './controllers'
 import dbLoader from './db'
 import environmentLoader from './environment'
 import mailLoader from './mail'
@@ -126,7 +128,6 @@ const loadMigrations = async (dir = process.cwd()) => {
 const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
   const app = new Koa()
   const server = http.Server(app.callback())
-  const validator = ajv({ allErrors: true, removeAdditional: true, useDefaults: true })
 
   if (areSocketsEnabled) {
     const sockets = socketIO(server)
@@ -135,7 +136,9 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
 
   const { config: { body = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
   const schema = await schemaLoader(schemaConfig)
-  const controllers = await controllersLoader(dir)
+  addService('schema', () => schema)
+  const validator = ajv({ allErrors: true, removeAdditional: true, useDefaults: true })
+  const controllers = await controllersLoader(dir, addService, bottle.container)
   const routes = {}
 
   app.use(kcors(cors))
@@ -155,15 +158,33 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
     }
   })
 
-  Object.keys(controllers).forEach((item) => {
-    const list = {}
-    controllers[item].forEach((element) => {
-      const [title] = element
-      addService(...element)
-      list[title] = bottle.container[title]
+  const getBefore = (fn) => async (ctx, next) => {
+    await fn(ctx)
+    await next()
+  }
+
+  const use = ({ index, ...items }, router, route = '', befores = []) => {
+    if (index && index.before) befores.push(getBefore(index.before))
+    Object.keys(items).forEach((item) => {
+      const element = items[item]
+      if (element.isNamespace) {
+        use(element, router, `${route}/${item}`, befores)
+      } else {
+        if (element.method) {
+          useAction(schema, validator, router, routes, `${route}/`, befores, item, element)
+        } else {
+          const { before, ...rest } = element
+          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...befores, getBefore(before)] : befores, param(name), rest[name]))
+        }
+      }
     })
-    use(item, list, app, schema, validator, routes)
-  })
+  }
+
+  const router = new Router()
+
+  use(controllers, router)
+
+  app.use(router.routes()).use(router.allowedMethods())
 
   return { routes, server }
 }

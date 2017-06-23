@@ -1,103 +1,92 @@
 import Bluebird from 'bluebird'
-import { pascal, param } from 'change-case'
+import { pascal } from 'change-case'
 import fs from 'fs'
-import Router from 'koa-router'
 import parseFunction from 'parse-function'
 import { join } from 'path'
 
+export const useAction = (parser, validator, router, routes, route, befores, name, action) => {
+  const {
+    before,
+    logging = {},
+    method,
+    schema,
+    type = 'post',
+    url = `${route}${name}`
+  } = action
+
+  const middlewares = [ ...befores ]
+
+  if (method) {
+    if (before) {
+      middlewares.push(async (ctx, next) => {
+        await before(ctx)
+        await next()
+      })
+    }
+    let onError = action.onError
+    if (!onError) {
+      onError = (error) => error.isValidation ? error.errors.map(({ dataPath: key, message: value }) => ({ key, value })) : null
+    }
+    middlewares.push(async (ctx, next) => {
+      try {
+        await next()
+      } catch (error) {
+        const errors = await onError(error)
+        if (!errors) throw (error)
+        else return Bluebird.reject({ status: 400, errors })
+      }
+    })
+    if (schema) {
+      const isValid = validator.compile(parser.parse(schema).schema)
+      middlewares.push(async (ctx, next) => {
+        ctx.request.body = ctx.request.body || {}
+        if (logging.body) console.log(JSON.stringify(ctx.request.body))
+        if (!isValid(ctx.request.body)) {
+          return Bluebird.reject({ errors: isValid.errors, isValidation: true })
+        }
+        await next()
+      })
+    }
+    router.use(url, ...middlewares)
+    router[type](url, async (ctx) => {
+      if (logging.schema) console.log(JSON.stringify(ctx.request.body))
+      await method(ctx)
+      if (logging.body) console.log(JSON.stringify(ctx.body))
+    })
+    routes[url] = pascal(url)
+  }
+}
+
 const isFile = (file) => file.includes('.js')
 
-const loadRecursively = (dir, namespaces = {}, namespace = '') => {
+const loadRecursively = (dir, controllers, addService, container, namespaces = []) => {
   if (fs.existsSync(dir) && fs.lstatSync(dir).isDirectory()) {
     fs
       .readdirSync(dir)
       .filter((item) => !item.includes('.') || isFile(item))
       .forEach((item) => {
         if (isFile(item)) {
-          const title = `${pascal(namespace)}${pascal(item.split('.')[0])}Controller`
+          const [name] = item.split('.')
+          const title = `${pascal(namespaces)}${pascal(name)}Controller`
           const definition = require(join(dir, item))
-          if (!namespaces[namespace]) namespaces[namespace] = []
-          namespaces[namespace].push([title, definition, ...parseFunction(definition).args])
+          const dependencies = parseFunction(definition).args
+          addService(title, definition, ...dependencies)
+          controllers[name] = container[title]
         } else {
-          loadRecursively(join(dir, item), namespaces, item)
+          controllers[item] = { isNamespace: true }
+          loadRecursively(join(dir, item), controllers[item], addService, container, namespaces.concat(item))
         }
       })
   }
 }
 
-const load = (dir) => {
+const load = (dir, addService, container) => {
   const controllersDir = join(dir, 'controllers')
-  const namespaces = {}
+  const controllers = {}
 
-  loadRecursively(controllersDir, namespaces)
+  loadRecursively(controllersDir, controllers, addService, container)
 
-  return Bluebird.resolve(namespaces)
-}
-
-const setBefore = (router, fn, url) => {
-  const middleware = async (ctx, next) => {
-    await fn(ctx)
-    await next()
-  }
-  if (url) router.use(url, middleware)
-  else router.use(middleware)
-}
-
-const use = (namespace, controllers, app, parser, validator, routes = {}) => {
-  const router = namespace === '' ? new Router() : new Router({ prefix: `/${namespace}` })
-  Object.keys(controllers)
-    .sort((a, b) => { return a.includes('Index') ? -1 : b.includes('Index') ? 1 : 0 })
-    .forEach((item) => {
-      const { before, ...rest } = controllers[item]
-      if (item.includes('Index') && before) {
-        setBefore(router, before)
-      } else {
-        Object.keys(rest).forEach((element) => {
-          const {
-          logging = {},
-          method,
-          schema,
-          type = 'post',
-          url = `/${param(item.replace(pascal(namespace), '').replace('Controller', ''))}-${param(element)}`
-        } = rest[element]
-          if (method) {
-            let onError = rest[element].onError
-            if (!onError) {
-              onError = (error) => error.isValidation ? error.errors.map(({ dataPath: key, message: value }) => ({ key, value })) : null
-            }
-            router.use(url, async (ctx, next) => {
-              try {
-                await next()
-              } catch (error) {
-                const errors = await onError(error)
-                if (!errors) throw (error)
-                else return Bluebird.reject({ status: 400, errors })
-              }
-            })
-            if (schema) {
-              const isValid = validator.compile(parser.parse(schema).schema)
-              router.use(url, async (ctx, next) => {
-                ctx.request.body = ctx.request.body || {}
-                if (logging.body) console.log(JSON.stringify(ctx.request.body))
-                if (!isValid(ctx.request.body)) {
-                  return Bluebird.reject({ errors: isValid.errors, isValidation: true })
-                }
-                await next()
-              })
-            }
-            if (before) setBefore(router, before, schema)
-            router[type](url, async (ctx) => {
-              if (logging.schema) console.log(JSON.stringify(ctx.request.body))
-              await method(ctx)
-              if (logging.body) console.log(JSON.stringify(ctx.body))
-            })
-            routes[namespace === '' ? url : `/${namespace}${url}`] = `${item}.${element}`
-          }
-        })
-      }
-    })
-  app.use(router.routes()).use(router.allowedMethods())
+  return Bluebird.resolve(controllers)
 }
 
 export default load
-export { use }
