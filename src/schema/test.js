@@ -85,7 +85,7 @@ describe('schema', function () {
       3. converts them to JSON schema`,
     function () {
       const noType = { anyOf: [[['age', 'number', true]], ['number']] }
-      const array = { items: [[['id', true]]] }
+      const array = { items: [['id', true]] }
       const detect = loader.__get__('detect')
 
       assert.equal(detect(noType, Object.keys(noType), ['anyOf']), true)
@@ -104,16 +104,14 @@ describe('schema', function () {
         ]
       })
       assert.deepEqual(array, {
-        items: [
-          {
-            additionalProperties: false,
-            properties: {
-              id: { type: 'string' }
-            },
-            required: ['id'],
-            type: 'object'
-          }
-        ]
+        items: {
+          additionalProperties: false,
+          properties: {
+            id: { type: 'string' }
+          },
+          required: ['id'],
+          type: 'object'
+        }
       })
     }
   )

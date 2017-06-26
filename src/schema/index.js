@@ -25,7 +25,7 @@ const detect = (props, keys, whitelist, predefined) => {
   if (keys.some((item) => whitelist.includes(item))) {
     flag = true
     keys.filter((item) => whitelist.includes(item)).forEach((item) => {
-      props[item] = props[item].map((element) => parse(element, predefined).schema)
+      props[item] = item === 'items' ? parse(props[item], predefine).schema : props[item].map((element) => parse(element, predefined).schema)
     })
   }
   return flag
