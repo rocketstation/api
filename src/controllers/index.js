@@ -9,12 +9,13 @@ export const useAction = (parser, validator, router, routes, route, befores, nam
     before,
     logging = {},
     method,
+    onError,
     schema,
     type = 'post',
     url = `${route}${name}`
   } = action
 
-  const middlewares = [ ...befores ]
+  const middlewares = [...befores]
 
   if (method) {
     if (before) {
@@ -23,15 +24,15 @@ export const useAction = (parser, validator, router, routes, route, befores, nam
         await next()
       })
     }
-    let onError = action.onError
-    if (!onError) {
-      onError = (error) => error.isValidation ? error.errors.map(({ dataPath: key, message: value }) => ({ key, value })) : null
-    }
+    const onValidationError = (error) => error.isValidation ? error.errors.map(({ dataPath: key, message: value }) => ({ key, value })) : null
     middlewares.push(async (ctx, next) => {
       try {
         await next()
       } catch (error) {
-        const errors = await onError(error)
+        let errors
+        if (error.constructor === Array) errors = error
+        if (!errors && onError) errors = await onError(error)
+        if (!errors) errors = onValidationError(error)
         if (!errors) throw (error)
         else return Bluebird.reject({ status: 400, errors })
       }
