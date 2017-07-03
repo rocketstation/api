@@ -186,7 +186,7 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
 
   app.use(router.routes()).use(router.allowedMethods())
 
-  return { routes, server }
+  return { app, routes, server }
 }
 
 export { addService, bottle, load, loadMigrations, serve }
