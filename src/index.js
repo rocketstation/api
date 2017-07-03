@@ -2,6 +2,7 @@ import ajv from 'ajv'
 import Bluebird from 'bluebird'
 import Bottle from 'bottlejs'
 import { param } from 'change-case'
+import fs from 'fs'
 import http from 'http'
 import kcors from 'kcors'
 import Koa from 'koa'
@@ -9,6 +10,7 @@ import koaBody from 'koa-body'
 import koaMorgan from 'koa-morgan'
 import Router from 'koa-router'
 import moment from 'moment-timezone'
+import path from 'path'
 import pgpLib from 'pg-promise'
 import pgpMonitor from 'pg-monitor'
 import Sequelize from 'sequelize'
@@ -52,9 +54,11 @@ const pgp = pgpLib(pgpOptions)
 
 const load = async (dir = process.cwd()) => {
   addService('Bluebird', () => Bluebird)
+  addService('fs', () => fs)
   addService('moment', () => moment)
-  addService('Sequelize', () => Sequelize)
+  addService('path', () => path)
   addService('pgp', () => pgp)
+  addService('Sequelize', () => Sequelize)
 
   const environment = await environmentLoader()
   const { db: dbConfig, dependencies, mail: mailConfig, ...config } = await configLoader(environment, dir)
