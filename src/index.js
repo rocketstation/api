@@ -128,8 +128,6 @@ const loadMigrations = async (dir = process.cwd()) => {
 }
 
 const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
-  if (bootstrap.length > 0) await Bluebird.each(bootstrap, item => item())
-
   const app = new Koa()
   const server = http.Server(app.callback())
 
@@ -138,7 +136,10 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
     addService('sockets', () => sockets)
   }
 
-  const { config: { body = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
+  const { bootstrap, config: { body = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
+
+  if (bootstrap.length > 0) await Bluebird.each(bootstrap, item => item())
+
   const schema = await schemaLoader(schemaConfig)
   addService('schema', () => schema)
   const validator = ajv({ allErrors: true, removeAdditional: true, useDefaults: true })
