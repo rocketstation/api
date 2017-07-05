@@ -105,9 +105,7 @@ const load = async (dir = process.cwd()) => {
 
   const { bootstrap, seeds } = promises
 
-  if (bootstrap.length > 0) await Bluebird.each(bootstrap, item => item())
-
-  return { config, sequelize, seeds }
+  return { bootstrap, config, sequelize, seeds }
 }
 
 const loadMigrations = async (dir = process.cwd()) => {
@@ -130,6 +128,8 @@ const loadMigrations = async (dir = process.cwd()) => {
 }
 
 const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
+  if (bootstrap.length > 0) await Bluebird.each(bootstrap, item => item())
+
   const app = new Koa()
   const server = http.Server(app.callback())
 
