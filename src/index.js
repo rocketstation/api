@@ -169,17 +169,18 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
   }
 
   const use = ({ index, ...items }, router, route = '', befores = []) => {
-    if (index && index.before) befores.push(getBefore(index.before))
+    let nextBefores = [...befores]
+    if (index && index.before) nextBefores = [...nextBefores, getBefore(index.before)]
     Object.keys(items).forEach((item) => {
       const element = items[item]
       if (element.isNamespace) {
-        use(element, router, `${route}/${item}`, befores)
+        use(element, router, `${route}/${item}`, nextBefores)
       } else {
         if (element.method) {
-          useAction(schema, validator, router, routes, `${route}/`, befores, item, element)
+          useAction(schema, validator, router, routes, `${route}/`, nextBefores, item, element)
         } else {
           const { before, ...rest } = element
-          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...befores, getBefore(before)] : befores, param(name), rest[name]))
+          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...nextBefores, getBefore(before)] : befores, param(name), rest[name]))
         }
       }
     })
