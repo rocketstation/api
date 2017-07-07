@@ -180,7 +180,7 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
           useAction(schema, validator, router, routes, `${route}/`, nextBefores, item, element)
         } else {
           const { before, ...rest } = element
-          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...nextBefores, getBefore(before)] : befores, param(name), rest[name]))
+          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...nextBefores, getBefore(before)] : nextBefores, param(name), rest[name]))
         }
       }
     })
