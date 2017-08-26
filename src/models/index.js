@@ -39,27 +39,36 @@ const associate = (model, title, sequelize, type, definition) => {
     }
   }
   if (constrain) {
-    if (type === 'belongsToMany' && !options.through) { options.through = snake(title > relation ? `${relation}${pluralize(title)}` : `${title}${pluralize(relation)}`) }
+    if (type === 'belongsToMany' && !options.through) { options.through = sequelize.models[camel(title > relation ? [relation, title] : [title, relation])] }
 
-    if (['hasMany', 'belongsTo'].includes(type)) {
-      let { onDelete = 'cascade', foreignKey: fk = {}, ...opts } = options
+    const { onDelete = 'cascade', foreignKey = {}, otherKey = {}, ...opts } = options
+    const keys = type === 'belongsToMany' ? { foreignKey, otherKey } : { foreignKey }
+    
+    Object.entries(keys).forEach(([k, v]) => {
+      let key = v
       const allowNull = onDelete.toLowerCase() === 'set null'
-      let fkName = `${camel(type === 'hasMany' ? title : relation)}ID`
-      if (typeof fk === 'string') {
-        fkName = fk
-        fk = {}
+      let name = `${camel(type === 'belongsTo' || k === 'otherKey' ? relation : title)}ID`
+      if (typeof v === 'string') {
+        name = v
+        key = {}
       }
-      const foreignKey = merge({ allowNull, name: fkName, field: snake(fkName) }, fk)
-      options = merge({ onDelete, foreignKey, hooks: true }, opts)
-    }
+      keys[k] = merge({ allowNull, name, field: snake(name) }, key)
+    })
+
+    options = merge({ ...keys, onDelete, hooks: true }, opts)
   }
   model[type](relatedModel, options)
 }
 
 const factory = (container, title) => {
-  const { sequelize } = container
+  const { sequelize, Sequelize } = container
   const { associations = {}, attributes = {}, classMethods = {}, instanceMethods = {}, ...options } = container[title]
   if (!options.tableName) options.tableName = snake(pluralize(title))
+  if (!attributes.id) attributes.id = {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  }
   const model = sequelize.define(title, attributes, options)
   Object.keys(classMethods).forEach((item) => {
     model[item] = classMethods[item]

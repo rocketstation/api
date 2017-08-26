@@ -55,10 +55,12 @@ const pgp = pgpLib(pgpOptions)
 const load = async (dir = process.cwd()) => {
   addService('Bluebird', () => Bluebird)
   addService('fs', () => fs)
-  addService('moment', () => moment)
   addService('path', () => path)
   addService('pgp', () => pgp)
   addService('Sequelize', () => Sequelize)
+
+  moment.tz.setDefault('UTC')
+  addService('moment', () => moment)
 
   const environment = await environmentLoader()
   const { db: dbConfig, dependencies, mail: mailConfig, ...config } = await configLoader(environment, dir)
