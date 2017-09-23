@@ -157,7 +157,7 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
       await next()
     } catch (error) {
       if (error.stack) console.log(error.stack)
-      else console.log(error)
+      console.log(error)
       const { status = 500 } = error
       const errors = status === 500 ? [{ key: 'internal', value: 'server error' }] : error.errors
       ctx.status = status

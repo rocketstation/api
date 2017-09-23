@@ -67,8 +67,9 @@ const getPending = async (connection, migrations) => {
     pending.forEach(({ table }) => {
       if (!createdTables.includes(table)) createdTables.push(table)
     })
-    pending = pending.concat(pendingUnsorted.filter(({ table, references }) => {
+    pending = pending.concat(pendingUnsorted.filter(({ table, references, title }) => {
       if (createdTables.includes(table) && !references.includes(table)) return false
+      if (references.includes(table) && pending.map(({ title }) => title).includes(title)) return false
       let flag = true
       references.forEach((item) => {
         flag = flag && createdTables.includes(item)

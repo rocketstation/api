@@ -65,9 +65,10 @@ const factory = (container, title) => {
   const { associations = {}, attributes = {}, classMethods = {}, instanceMethods = {}, ...options } = container[title]
   if (!options.tableName) options.tableName = snake(pluralize(title))
   if (!attributes.id) attributes.id = {
-    type: Sequelize.INTEGER,
+    allowNull: false,
+    autoIncrement: true,
     primaryKey: true,
-    autoIncrement: true
+    type: Sequelize.INTEGER,
   }
   const model = sequelize.define(title, attributes, options)
   Object.keys(classMethods).forEach((item) => {
