@@ -85,7 +85,7 @@ const load = async (dir = process.cwd()) => {
   const modelsKeys = Object.keys(models)
 
   modelsKeys.forEach((item) => {
-    sequelize.define(item, { tableName: getTableName(item) })
+    sequelize.define(item, {}, { tableName: getTableName(item) })
     addService(item, models[item].definition, ...models[item].args)
   })
 
