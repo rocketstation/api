@@ -8,6 +8,7 @@ import kcors from 'kcors'
 import Koa from 'koa'
 import koaBody from 'koa-body'
 import koaMorgan from 'koa-morgan'
+import lodash from 'lodash'
 import Router from 'koa-router'
 import moment from 'moment-timezone'
 import path from 'path'
@@ -55,6 +56,7 @@ const pgp = pgpLib(pgpOptions)
 const load = async (dir = process.cwd()) => {
   addService('Bluebird', () => Bluebird)
   addService('fs', () => fs)
+  addService('lodash', () => lodash)
   addService('path', () => path)
   addService('pgp', () => pgp)
   addService('Sequelize', () => Sequelize)

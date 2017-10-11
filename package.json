@@ -17,6 +17,7 @@
     "koa-body": "2",
     "koa-morgan": "1",
     "koa-router": "7",
+    "lodash": "4",
     "mjml": "3",
     "moment": "2",
     "moment-timezone": "^0.5.11",
@@ -73,5 +74,5 @@
     "lint": "standard 'src/**/!(test.js)' --fix --verbose | snazzy && standard '+(config|src)/**/test.js' --env mocha --fix --verbose | snazzy",
     "test": "nyc -i babel-register -x '+(config|src)/**/test.js' mocha '+(config|src)/**/test.js' && rm -rf coverage"
   },
-  "version": "1.0.40"
+  "version": "1.0.41"
 }
