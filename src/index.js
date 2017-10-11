@@ -22,7 +22,7 @@ import dbLoader from './db'
 import environmentLoader from './environment'
 import mailLoader from './mail'
 import migrationsLoader, { getPending, run, runPending } from './migrations'
-import modelsLoader from './models'
+import modelsLoader, { getTableName } from './models'
 import schemaLoader from './schema'
 import scriptsLoader from './scripts'
 import servicesLoader from './services'
@@ -77,7 +77,7 @@ const load = async (dir = process.cwd()) => {
   }
 
   const services = await servicesLoader(dir)
-  Object.keys(services).forEach((item) => { addService(...[item, ...services[item]]) })
+  Object.keys(services).forEach((item) => { addService(item, ...services[item]) })
 
   const sequelize = new Sequelize(`${db.connectionString}/${db.name}`, db.sequelizeOptions)
 
@@ -85,8 +85,8 @@ const load = async (dir = process.cwd()) => {
   const modelsKeys = Object.keys(models)
 
   modelsKeys.forEach((item) => {
-    sequelize.define(item)
-    addService(...[item, models[item].definition, ...models[item].args])
+    sequelize.define(item, { tableName: getTableName(item) })
+    addService(item, models[item].definition, ...models[item].args)
   })
 
   addService('sequelize', () => sequelize)
@@ -115,7 +115,7 @@ const loadMigrations = async (dir = process.cwd()) => {
   const migrations = await migrationsLoader(dir)
   Object.keys(migrations).forEach((item) => {
     const title = item.split('.').join('')
-    addService(...[title, ...migrations[item]])
+    addService(title, ...migrations[item])
     migrations[item] = bottle.container[title]
   })
   return {

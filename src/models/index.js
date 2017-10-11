@@ -43,7 +43,7 @@ const associate = (model, title, sequelize, type, definition) => {
 
     const { onDelete = 'cascade', foreignKey = {}, otherKey = {}, ...opts } = options
     const keys = type === 'belongsToMany' ? { foreignKey, otherKey } : { foreignKey }
-    
+
     Object.entries(keys).forEach(([k, v]) => {
       let key = v
       const allowNull = onDelete.toLowerCase() === 'set null'
@@ -63,12 +63,14 @@ const associate = (model, title, sequelize, type, definition) => {
 const factory = (container, title) => {
   const { sequelize, Sequelize } = container
   const { associations = {}, attributes = {}, classMethods = {}, instanceMethods = {}, ...options } = container[title]
-  if (!options.tableName) options.tableName = snake(pluralize(title))
-  if (!attributes.id) attributes.id = {
-    allowNull: false,
-    autoIncrement: true,
-    primaryKey: true,
-    type: Sequelize.INTEGER,
+  if (!options.tableName) options.tableName = getTableName(title)
+  if (!attributes.id) {
+    attributes.id = {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: Sequelize.INTEGER
+    }
   }
   const model = sequelize.define(title, attributes, options)
   Object.keys(classMethods).forEach((item) => {
@@ -85,6 +87,8 @@ const factory = (container, title) => {
 }
 
 const getFilePath = (dir, model) => path.join(dir, model, 'model.js')
+
+export const getTableName = (title) => snake(pluralize(title))
 
 const load = (dir) => {
   const modelsDir = path.join(dir, 'models')
