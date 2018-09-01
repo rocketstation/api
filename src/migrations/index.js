@@ -1,12 +1,12 @@
 import Bluebird from 'bluebird'
-import { snake } from 'change-case'
+import { sl } from '@rocketstation/change-case'
 import fs from 'fs'
 import parseFunction from 'parse-function'
 import path from 'path'
 import pluralize from 'pluralize'
 
 const getDirPath = (dir, model) => path.join(dir, model, 'migrations')
-const getTableName = (migrationTitle) => pluralize(snake(migrationTitle.split('.').slice(0, -1)))
+const getTableName = (migrationTitle) => pluralize(sl(migrationTitle.split('.').slice(0, -1)))
 
 const load = (dir) => {
   const modelsDir = path.join(dir, 'models')

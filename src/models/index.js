@@ -1,14 +1,10 @@
 import Bluebird from 'bluebird'
-import {
-  camel,
-  pascal,
-  snake
-} from 'change-case'
 import merge from 'deepmerge'
 import fs from 'fs'
 import parseFunction from 'parse-function'
 import path from 'path'
 import pluralize from 'pluralize'
+import { cl, cu, sl } from '@rocketstation/change-case'
 
 const associate = (model, title, sequelize, type, definition) => {
   if (Array.isArray(definition)) {
@@ -23,13 +19,13 @@ const associate = (model, title, sequelize, type, definition) => {
   switch (typeof definition) {
     case 'string': {
       relation = definition
-      relatedModel = sequelize.models[camel(relation)]
+      relatedModel = sequelize.models[cl(relation)]
       break
     }
     case 'object': {
       const { model: declaredModel, scope, ...rest } = definition
       relation = declaredModel
-      relatedModel = sequelize.models[camel(relation)]
+      relatedModel = sequelize.models[cl(relation)]
       if (scope) {
         constrain = false
         if (scope.method) relatedModel = relatedModel.scope(scope)
@@ -39,7 +35,7 @@ const associate = (model, title, sequelize, type, definition) => {
     }
   }
   if (constrain) {
-    if (type === 'belongsToMany' && !options.through) { options.through = sequelize.models[camel(title > relation ? [relation, title] : [title, relation])] }
+    if (type === 'belongsToMany' && !options.through) { options.through = sequelize.models[cl(title > relation ? [relation, title] : [title, relation])] }
 
     const { onDelete = 'cascade', foreignKey = {}, otherKey = {}, ...opts } = options
     const keys = type === 'belongsToMany' ? { foreignKey, otherKey } : { foreignKey }
@@ -47,12 +43,12 @@ const associate = (model, title, sequelize, type, definition) => {
     Object.entries(keys).forEach(([k, v]) => {
       let key = v
       const allowNull = onDelete.toLowerCase() === 'set null'
-      let name = `${camel(type === 'belongsTo' || k === 'otherKey' ? relation : title)}ID`
+      let name = `${cl(type === 'belongsTo' || k === 'otherKey' ? relation : title)}ID`
       if (typeof v === 'string') {
         name = v
         key = {}
       }
-      keys[k] = merge({ allowNull, name, field: snake(name) }, key)
+      keys[k] = merge({ allowNull, name, field: sl(name) }, key)
     })
 
     options = merge({ ...keys, onDelete, hooks: true }, opts)
@@ -81,14 +77,14 @@ const factory = (container, title) => {
   })
   ;['hasMany', 'belongsTo', 'belongsToMany'].forEach((item) => {
     const definition = associations[item]
-    if (definition) associate(model, pascal(title), sequelize, item, definition)
+    if (definition) associate(model, cu(title), sequelize, item, definition)
   })
   return model
 }
 
 const getFilePath = (dir, model) => path.join(dir, model, 'model.js')
 
-export const getTableName = (title) => snake(pluralize(title))
+export const getTableName = (title) => sl(pluralize(title))
 
 const load = (dir) => {
   const modelsDir = path.join(dir, 'models')
@@ -99,11 +95,11 @@ const load = (dir) => {
       .filter(item => fs.lstatSync(path.join(modelsDir, item)).isDirectory() && fs.existsSync(getFilePath(modelsDir, item)))
       .forEach(item => {
         const definition = require(getFilePath(modelsDir, item))
-        const title = camel(item)
+        const title = cl(item)
         result[title] = {
           args: parseFunction(definition).args,
           definition,
-          name: pascal(title),
+          name: cu(title),
           factory (container) {
             return factory(container, title)
           }

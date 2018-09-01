@@ -1,7 +1,7 @@
 import Bluebird from 'bluebird'
-import changeCase from 'change-case'
 import fs from 'fs'
 import path from 'path'
+import { cl } from '@rocketstation/change-case'
 
 const loadEnvConfigs = (configFiles, envDir, mainDir) => {
   configFiles.forEach((file) => {
@@ -42,7 +42,7 @@ const load = (env, dir) => {
 
   dirs.forEach((configDir) => {
     readConfigs(configDir, ['seeds', 'secret', 'env', 'bootstrap']).forEach((file) => {
-      const title = changeCase.camel(getTitle(file))
+      const title = cl(getTitle(file))
 
       result[title] = Object.assign(result[title] || {}, require(path.join(configDir, file)))
     })

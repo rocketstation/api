@@ -1,8 +1,8 @@
 import Bluebird from 'bluebird'
-import { pascal } from 'change-case'
 import fs from 'fs'
 import parseFunction from 'parse-function'
 import { join } from 'path'
+import { cu } from '@rocketstation/change-case'
 
 export const useAction = (parser, validator, router, routes, route, befores, name, action) => {
   const {
@@ -54,7 +54,7 @@ export const useAction = (parser, validator, router, routes, route, befores, nam
       await method(ctx)
       if (logging.body) console.log(JSON.stringify(ctx.body))
     })
-    routes[url] = pascal(url)
+    routes[url] = cu(url)
   }
 }
 
@@ -68,7 +68,7 @@ const loadRecursively = (dir, controllers, addService, container, namespaces = [
       .forEach((item) => {
         if (isFile(item)) {
           const [name] = item.split('.')
-          const title = `${pascal(namespaces)}${pascal(name)}Controller`
+          const title = cu(...[].concat(namespaces, name, 'Controller'))
           const definition = require(join(dir, item))
           const dependencies = parseFunction(definition).args
           addService(title, definition, ...dependencies)

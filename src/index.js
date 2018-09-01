@@ -1,7 +1,6 @@
 import ajv from 'ajv'
 import Bluebird from 'bluebird'
 import Bottle from 'bottlejs'
-import { param } from 'change-case'
 import fs from 'fs'
 import http from 'http'
 import kcors from 'kcors'
@@ -14,6 +13,7 @@ import moment from 'moment-timezone'
 import path from 'path'
 import pgpLib from 'pg-promise'
 import pgpMonitor from 'pg-monitor'
+import { k as kebab } from '@rocketstation/change-case'
 import Sequelize from 'sequelize'
 import socketIO from 'socket.io'
 
@@ -184,7 +184,7 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
           useAction(schema, validator, router, routes, `${route}/`, nextBefores, item, element)
         } else {
           const { before, ...rest } = element
-          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...nextBefores, getBefore(before)] : nextBefores, param(name), rest[name]))
+          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...nextBefores, getBefore(before)] : nextBefores, kebab(name), rest[name]))
         }
       }
     })

@@ -1,10 +1,10 @@
 import Bluebird from 'bluebird'
-import changeCase from 'change-case'
 import fs from 'fs'
 import parseFunction from 'parse-function'
 import path from 'path'
+import { cu } from '@rocketstation/change-case'
 
-const getTitle = (file) => `${changeCase.pascal(file.split('.')[0])}Service`
+const getTitle = (file) => `${cu(file.split('.')[0])}Service`
 
 const load = (dir) => {
   const servicesDir = path.join(dir, 'services')
