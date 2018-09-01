@@ -24,7 +24,7 @@
     "nodemailer": "4",
     "nodemailer-smtp-transport": "2",
     "parse-function": "3",
-    "pg": "7",
+    "pg": "~> 7.0.2",
     "pg-connection-string": "2",
     "pg-hstore": "2",
     "pg-monitor": "1",
