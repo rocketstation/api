@@ -19,7 +19,7 @@
     "koa-router": "7",
     "lodash": "~> 4.17.5",
     "mjml": "4",
-    "moment": "~> 2.19.5",
+    "moment": "~> 2.22.2",
     "moment-timezone": "0",
     "nodemailer": "4",
     "nodemailer-smtp-transport": "2",
@@ -74,5 +74,5 @@
     "lint": "standard 'src/**/!(test.js)' --fix --verbose | snazzy && standard '+(config|src)/**/test.js' --env mocha --fix --verbose | snazzy",
     "test": "nyc -i babel-register -x '+(config|src)/**/test.js' mocha '+(config|src)/**/test.js' && rm -rf coverage"
   },
-  "version": "1.0.42"
+  "version": "1.0.43"
 }
