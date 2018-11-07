@@ -54,7 +54,7 @@ export const useAction = (parser, validator, router, routes, route, befores, nam
       await method(ctx)
       if (logging.body) console.log(JSON.stringify(ctx.body))
     })
-    routes[url] = cu(url)
+    routes[`${type} ${url}`] = cu(type, url)
   }
 }
 
