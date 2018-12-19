@@ -20,7 +20,7 @@ const send = async (transport, options, template, dir, convertEJS, context, mjml
 
 const load = (config, dir) => {
   const convertEJS = Bluebird.promisify(renderFile)
-  const { mjml2html } = require('mjml')
+  const mjml2html = require('mjml')
   const transports = ['ses', 'smtp']
   const mail = {}
 
