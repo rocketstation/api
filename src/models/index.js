@@ -43,7 +43,7 @@ const associate = (model, title, sequelize, type, definition) => {
     Object.entries(keys).forEach(([k, v]) => {
       let key = v
       const allowNull = onDelete.toLowerCase() === 'set null'
-      let name = `${cl(type === 'belongsTo' || k === 'otherKey' ? relation : title)}ID`
+      let name = cl(type === 'belongsTo' || k === 'otherKey' ? relation : title, 'id')
       if (typeof v === 'string') {
         name = v
         key = {}
