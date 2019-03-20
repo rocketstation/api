@@ -2,20 +2,16 @@ import ajv from 'ajv'
 import Bluebird from 'bluebird'
 import Bottle from 'bottlejs'
 import fs from 'fs'
-import http from 'http'
 import kcors from 'kcors'
 import Koa from 'koa'
 import koaBody from 'koa-body'
 import koaMorgan from 'koa-morgan'
-import lodash from 'lodash'
 import Router from 'koa-router'
-import moment from 'moment-timezone'
 import path from 'path'
 import pgpLib from 'pg-promise'
 import pgpMonitor from 'pg-monitor'
 import { k as kebab } from '@rocketstation/change-case'
 import Sequelize from 'sequelize'
-import socketIO from 'socket.io'
 
 import configLoader from './config'
 import controllersLoader, { useAction } from './controllers'
@@ -56,13 +52,9 @@ const pgp = pgpLib(pgpOptions)
 const load = async (dir = process.cwd()) => {
   addService('Bluebird', () => Bluebird)
   addService('fs', () => fs)
-  addService('lodash', () => lodash)
   addService('path', () => path)
   addService('pgp', () => pgp)
   addService('Sequelize', () => Sequelize)
-
-  moment.tz.setDefault('UTC')
-  addService('moment', () => moment)
 
   const environment = await environmentLoader()
   const { db: dbConfig, dependencies, mail: mailConfig, ...config } = await configLoader(environment, dir)
@@ -131,21 +123,17 @@ const loadMigrations = async (dir = process.cwd()) => {
   }
 }
 
-const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
+const serve = async (dir = process.cwd()) => {
   const app = new Koa()
-  const server = http.Server(app.callback())
-
-  if (areSocketsEnabled) {
-    const sockets = socketIO(server)
-    addService('sockets', () => sockets)
-  }
 
   const { bootstrap, config: { body = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
 
   if (bootstrap.length > 0) await Bluebird.each(bootstrap, item => item())
 
   const schema = await schemaLoader(schemaConfig)
+
   addService('schema', () => schema)
+
   const validator = ajv({ allErrors: true, removeAdditional: true, useDefaults: true })
   const controllers = await controllersLoader(dir, addService, bottle.container)
   const routes = {}
@@ -196,7 +184,7 @@ const serve = async (dir = process.cwd(), areSocketsEnabled = false) => {
 
   app.use(router.routes()).use(router.allowedMethods())
 
-  return { app, routes, server }
+  return { app, routes }
 }
 
 export { addService, bottle, load, loadMigrations, serve }

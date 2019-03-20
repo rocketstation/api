@@ -7,31 +7,26 @@
   "dependencies": {
     "@rocketstation/change-case": "1",
     "ajv": "6",
-    "aws-sdk": "2",
     "bluebird": "3",
     "bottlejs": "1",
     "deepmerge": "2",
-    "ejs": "~> 2.5.5",
+    "ejs": "2",
     "kcors": "2",
     "koa": "2",
     "koa-body": "4",
     "koa-morgan": "1",
     "koa-router": "7",
-    "lodash": "~> 4.17.5",
     "mjml": "4",
-    "moment": "~> 2.22.2",
-    "moment-timezone": "0",
     "nodemailer": "4",
     "nodemailer-smtp-transport": "2",
     "parse-function": "3",
-    "pg": "~> 7.0.2",
+    "pg": "7",
     "pg-connection-string": "2",
     "pg-hstore": "2",
     "pg-monitor": "1",
     "pg-promise": "8",
     "pluralize": "7",
-    "sequelize": "4",
-    "socket.io": "2"
+    "sequelize": "4"
   },
   "devDependencies": {
     "babel-cli": "6",
@@ -74,5 +69,5 @@
     "lint": "standard 'src/**/!(test.js)' --fix --verbose | snazzy && standard '+(config|src)/**/test.js' --env mocha --fix --verbose | snazzy",
     "test": "nyc -i babel-register -x '+(config|src)/**/test.js' mocha '+(config|src)/**/test.js' && rm -rf coverage"
   },
-  "version": "1.0.51"
+  "version": "1.1.0"
 }

@@ -3,7 +3,6 @@ import { renderFile } from 'ejs'
 import fs from 'fs'
 import nodemailer from 'nodemailer'
 import path from 'path'
-import aws from 'aws-sdk'
 
 const send = async (transport, options, template, dir, convertEJS, context, mjml2html) => {
   let html
@@ -34,9 +33,7 @@ const load = (config, dir) => {
         }
       }
       if (item === 'smtp') transport = nodemailer.createTransport(require(`nodemailer-smtp-transport`)(config[item]))
-      if (item === 'ses') {
-        transport = nodemailer.createTransport({ SES: new aws.SES({ apiVersion: '2010-12-01', ...config[item] }) })
-      }
+
       mail[item] = { send (options, template, context) { return send(transport, options, template, dir, convertEJS, context, mjml2html) } }
     })
 

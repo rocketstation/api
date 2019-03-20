@@ -4,7 +4,8 @@ import assert from '../../config/assert'
 
 const loader = rewire('./index.js')
 
-const connectionString = 'postgres://user:password@localhost:5432'
+const user = 'user'
+const connectionString = `postgres://${user}:password@localhost:5432`
 const name = 'test'
 const connectionURL = `${connectionString}/${name}`
 const loadWithFakeConnection = () => loader.__get__('load')({ connectionURL })
@@ -14,12 +15,12 @@ describe('db', function () {
     it('loads from connectionURL', function () {
       const parsed = loader.__get__('parseDBConfig')({ connectionURL })
 
-      assert.deepEqual(parsed, { connectionString, name })
+      assert.deepEqual(parsed, { connectionString, name, user })
     })
     it('loads from js options', function () {
       const parsed = loader.__get__('parseDBConfig')({ username: 'user', password: 'password', host: 'localhost', port: 5432, database: 'test' })
 
-      assert.deepEqual(parsed, { connectionString, name })
+      assert.deepEqual(parsed, { connectionString, name, user })
     })
   })
   it('stops without DB name', function () {
