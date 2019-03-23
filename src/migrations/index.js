@@ -114,6 +114,7 @@ const run = async (connection, type, model, version = '', migrations, sequelize)
 }
 
 const runPending = async (connection, migrations, sequelize) => {
+  await connection.query('create table if not exists "rstation_api_migrations" ("title" varchar(255) not null unique)')
   const pending = await getPending(connection, migrations)
   const queryInterface = sequelize.getQueryInterface()
   if (pending.length > 0) {
