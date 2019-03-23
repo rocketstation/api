@@ -91,6 +91,7 @@ const getPending = async (connection, migrations) => {
 }
 
 const run = async (connection, type, model, version = '', migrations, sequelize) => {
+  await connection.query('create table if not exists "rstation_api_migrations" ("title" varchar(255) not null unique)')
   const title = `${model}.${version}`
   const versions = Object.keys(migrations).filter((item) => item.startsWith(title))
   if (versions.length === 0) return Bluebird.reject(`no migrations found for '${model}' model`)

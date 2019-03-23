@@ -27,15 +27,7 @@ const load = (config) => {
     async create (connection, pgp) {
       const dbExists = await result.checkIfExists(connection)
 
-      if (!dbExists) {
-        await connection.query(`create database ${name}`)
-
-        const dbConnection = result.getConnection(pgp, `${connectionString}/${name}`)
-
-        await dbConnection.query('create table if not exists "rstation_api_migrations" ("title" varchar(255) not null unique)')
-
-        return dbConnection
-      }
+      if (!dbExists) await connection.query(`create database ${name}`)
     },
     delete (connection) {
       return connection.query(`drop database if exists ${name}`)
