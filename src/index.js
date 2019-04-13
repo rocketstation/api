@@ -126,7 +126,7 @@ const loadMigrations = async (dir = process.cwd()) => {
 const serve = async (dir = process.cwd()) => {
   const app = new Koa()
 
-  const { bootstrap, config: { body = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
+  const { bootstrap, config: { body: { formidable = {}, ...body } = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
 
   if (bootstrap.length > 0) await Bluebird.each(bootstrap, item => item())
 
@@ -137,10 +137,6 @@ const serve = async (dir = process.cwd()) => {
   const validator = ajv({ allErrors: true, removeAdditional: true, useDefaults: true })
   const controllers = await controllersLoader(dir, addService, bottle.container)
   const routes = {}
-
-  app.use(kcors(cors))
-  app.use(koaMorgan(format, options))
-  app.use(koaBody(body))
 
   app.use(async (ctx, next) => {
     try {
@@ -155,24 +151,38 @@ const serve = async (dir = process.cwd()) => {
     }
   })
 
+  app.use(kcors(cors))
+  app.use(koaMorgan(format, options))
+
   const getBefore = (fn) => async (ctx, next) => {
     await fn(ctx)
+
     await next()
   }
 
   const use = ({ index, ...items }, router, route = '', befores = []) => {
     let nextBefores = [...befores]
+
     if (index && index.before) nextBefores = [...nextBefores, getBefore(index.before)]
+
     Object.keys(items).forEach((item) => {
       const element = items[item]
+
       if (element.isNamespace) {
         use(element, router, `${route}/${item}`, nextBefores)
       } else {
-        if (element.method) {
-          useAction(schema, validator, router, routes, `${route}/`, nextBefores, item, element)
+        const { before, body: { formidable: formidableEl = {}, ...bodyEl } = {}, ...rest } = element
+
+        const nextBeforesEl = [...nextBefores]
+
+        if (before) nextBeforesEl.push(getBefore(before))
+
+        nextBeforesEl.push(koaBody({ formidable: { ...formidable, ...formidableEl }, ...body, ...bodyEl }))
+
+        if (rest.method) {
+          useAction(schema, validator, router, routes, `${route}/`, nextBeforesEl, item, rest)
         } else {
-          const { before, ...rest } = element
-          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, before ? [...nextBefores, getBefore(before)] : nextBefores, kebab(name), rest[name]))
+          Object.keys(rest).forEach((name) => useAction(schema, validator, router, routes, `${route}/${item}-`, nextBeforesEl, kebab(name), rest[name]))
         }
       }
     })
