@@ -69,5 +69,5 @@
     "lint": "standard 'src/**/!(test.js)' --fix --verbose | snazzy && standard '+(config|src)/**/test.js' --env mocha --fix --verbose | snazzy",
     "test": "nyc -i babel-register -x '+(config|src)/**/test.js' mocha '+(config|src)/**/test.js' && rm -rf coverage"
   },
-  "version": "1.1.4"
+  "version": "1.1.8"
 }
