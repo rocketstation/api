@@ -118,6 +118,7 @@ const loadMigrations = async (dir = process.cwd()) => {
     migrations[item] = bottle.container[title]
   })
   return {
+    bottle,
     getPending (connection) { return getPending(connection, migrations) },
     run (connection, type, model, version) { return run(connection, type, model, version, migrations, sequelize) },
     runPending (connection) { return runPending(connection, migrations, sequelize) },
