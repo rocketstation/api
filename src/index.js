@@ -24,17 +24,6 @@ import schemaLoader from './schema'
 import scriptsLoader from './scripts'
 import servicesLoader from './services'
 
-const bottle = new Bottle()
-const addService = (name, fn, ...deps) => {
-  bottle.factory(name, (container) => {
-    const resolvedDependencies = []
-    deps.forEach((item) => {
-      resolvedDependencies.push(container[item])
-    })
-    return fn(...resolvedDependencies)
-  })
-}
-
 const pgpOptions = {
   promiseLib: Bluebird
 }
@@ -49,7 +38,21 @@ try {
 
 const pgp = pgpLib(pgpOptions)
 
-const load = async (dir = process.cwd()) => {
+const load = async (dir = process.cwd(), configCustom = {}) => {
+  const bottle = new Bottle()
+
+  const addService = (name, fn, ...deps) => {
+    bottle.factory(name, (container) => {
+      const resolvedDependencies = []
+
+      deps.forEach((item) => {
+        resolvedDependencies.push(container[item])
+      })
+
+      return fn(...resolvedDependencies)
+    })
+  }
+
   addService('Bluebird', () => Bluebird)
   addService('fs', () => fs)
   addService('path', () => path)
@@ -62,7 +65,9 @@ const load = async (dir = process.cwd()) => {
   if (dependencies) Object.keys(dependencies).forEach((item) => { addService(item, () => dependencies[item]) })
   addService('config', () => config)
 
-  const db = await dbLoader(dbConfig)
+  const { db: dbConfigCustom = {} } = configCustom
+
+  const db = await dbLoader({ ...dbConfig, ...dbConfigCustom })
   addService('db', () => db)
 
   if (mailConfig) {
@@ -101,11 +106,11 @@ const load = async (dir = process.cwd()) => {
 
   const { bootstrap, seeds } = promises
 
-  return { bootstrap, config, sequelize, seeds }
+  return { addService, bootstrap, bottle, config, sequelize, seeds }
 }
 
 const loadMigrations = async (dir = process.cwd()) => {
-  const { sequelize, seeds } = await load(dir)
+  const { addService, bottle, sequelize, seeds } = await load(dir)
   const migrations = await migrationsLoader(dir)
   Object.keys(migrations).forEach((item) => {
     const title = item.split('.').join('')
@@ -126,7 +131,7 @@ const loadMigrations = async (dir = process.cwd()) => {
 const serve = async (dir = process.cwd()) => {
   const app = new Koa()
 
-  const { bootstrap, config: { body: { formidable = {}, ...body } = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
+  const { addService, bootstrap, bottle, config: { body: { formidable = {}, ...body } = {}, cors = {}, morgan: { format = 'dev', options = {} } = {}, schemaConfig } } = await load(dir)
 
   if (bootstrap.length > 0) await Bluebird.each(bootstrap, item => item())
 
@@ -197,4 +202,4 @@ const serve = async (dir = process.cwd()) => {
   return { app, routes }
 }
 
-export { addService, bottle, load, loadMigrations, serve }
+export { load, loadMigrations, serve }
