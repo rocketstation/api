@@ -16,7 +16,6 @@
     "koa-body": "4",
     "koa-morgan": "1",
     "koa-router": "7",
-    "mjml": "4",
     "nodemailer": "4",
     "nodemailer-smtp-transport": "2",
     "parse-function": "3",
@@ -26,7 +25,7 @@
     "pg-monitor": "1",
     "pg-promise": "8",
     "pluralize": "7",
-    "sequelize": "4"
+    "sequelize": "^4.44.3"
   },
   "devDependencies": {
     "babel-cli": "6",
@@ -69,5 +68,5 @@
     "lint": "standard 'src/**/!(test.js)' --fix --verbose | snazzy && standard '+(config|src)/**/test.js' --env mocha --fix --verbose | snazzy",
     "test": "nyc -i babel-register -x '+(config|src)/**/test.js' mocha '+(config|src)/**/test.js' && rm -rf coverage"
   },
-  "version": "1.1.16"
+  "version": "1.2.0"
 }

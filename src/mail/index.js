@@ -4,13 +4,12 @@ import fs from 'fs'
 import nodemailer from 'nodemailer'
 import path from 'path'
 
-const send = async (transport, options, template, dir, convertEJS, context, mjml2html) => {
+const send = async (transport, options, template, dir, convertEJS, context) => {
   let html
   if (template) {
-    const asset = path.join(dir, 'assets', 'mail', template, 'html.mjml.ejs')
+    const asset = path.join(dir, 'assets', 'mail', template, 'html.ejs')
     if (fs.existsSync(asset)) {
-      const str = await convertEJS(asset, context, { cache: true })
-      html = mjml2html(str).html
+      html = await convertEJS(asset, context, { cache: true })
     }
   }
   const params = html ? { ...options, html } : options
@@ -19,7 +18,6 @@ const send = async (transport, options, template, dir, convertEJS, context, mjml
 
 const load = (config, dir) => {
   const convertEJS = Bluebird.promisify(renderFile)
-  const mjml2html = require('mjml')
   const transports = ['ses', 'smtp']
   const mail = {}
 
@@ -34,7 +32,7 @@ const load = (config, dir) => {
       }
       if (item === 'smtp') transport = nodemailer.createTransport(require(`nodemailer-smtp-transport`)(config[item]))
 
-      mail[item] = { send (options, template, context) { return send(transport, options, template, dir, convertEJS, context, mjml2html) } }
+      mail[item] = { send (options, template, context) { return send(transport, options, template, dir, convertEJS, context) } }
     })
 
   let defaultMailer = config.default
