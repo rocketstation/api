@@ -16,7 +16,7 @@
     "koa-body": "4",
     "koa-morgan": "1",
     "koa-router": "7",
-    "nodemailer": "4",
+    "nodemailer": "6",
     "nodemailer-smtp-transport": "2",
     "parse-function": "3",
     "pg": "7",
